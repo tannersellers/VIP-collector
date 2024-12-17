@@ -12,11 +12,36 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Comparator;
 
+/**
+ * EventListener class listens for Discord message events and handles specific commands
+ * related to reposting messages containing "@VIP".
+ *
+ * Key Features:
+ * - Listens for the `!collect_vip` command in text channels.
+ * - Fetches messages containing "@VIP" from a source channel posted on the current day.
+ * - Reposts collected messages to a designated target channel.
+ * - Handles errors gracefully, such as invalid channel IDs or message fetch issues.
+ *
+ * Configuration:
+ * - The source and target channel IDs are loaded from a .env file.
+ *
+ * Dependencies:
+ * - Requires the JDA (Java Discord API) library.
+ * - Uses Dotenv for managing environment variables.
+ *
+ * @author Tanner Sellers
+ */
+
 public class EventListener extends ListenerAdapter {
     private final Dotenv channels = Dotenv.configure().load();
     String sourceID = channels.get("SOURCEID");
     String destID = channels.get("DESTID");
 
+    /**
+     * Handles the reception of messages in Discord text channels.
+     *
+     * @param event The MessageReceivedEvent triggered by Discord.
+     */
     @Override
     public void onMessageReceived(MessageReceivedEvent event) {
         // Ensure the message comes from a text channel
@@ -36,6 +61,18 @@ public class EventListener extends ListenerAdapter {
         }
     }
 
+    /**
+     * Collects and reposts messages containing "@VIP" from the source channel to the target channel.
+     *
+     * Steps:
+     * - Fetches up to 100 recent messages from the source channel.
+     * - Filters messages containing "@VIP" and posted on the current day.
+     * - Reposts the filtered messages to the target channel.
+     *
+     * @param sourceChannel The channel to collect messages from.
+     * @param targetChannel The channel to repost messages to.
+     * @param event The original MessageReceivedEvent for context and error handling.
+     */
     private void repostVIPMessages(TextChannel sourceChannel, TextChannel targetChannel, MessageReceivedEvent event) {
         List<Message> vipMessages = new ArrayList<>();
         LocalDate today = LocalDate.now();
